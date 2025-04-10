@@ -51,6 +51,11 @@
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
+
+        .btn-group-view {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 
@@ -65,7 +70,11 @@
             </div>
             <div class="button-action">
                 @if ($linimasa->isNotEmpty())
-                    <button id="toggleView" class="btn btn-secondary">Tampilkan Tabel</button>
+                    <div class="btn-group-view mb-2">
+                        <button id="viewByEmployees" class="btn btn-primary active">Tampilkan per Pegawai</button>
+                        <button id="viewByCategories" class="btn btn-secondary">Tampilkan per Kategori</button>
+                        <button id="toggleView" class="btn btn-secondary">Tampilkan Tabel</button>
+                    </div>
                 @endif
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#linimasaCreateModal">
                     <i class="bi bi-plus-lg"></i> Tambah Linimasa
@@ -156,16 +165,94 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let toggleButton = document.getElementById("toggleView");
+            let viewByEmployeesButton = document.getElementById("viewByEmployees");
+            let viewByCategoriesButton = document.getElementById("viewByCategories");
+            let timelineContainer = document.getElementById("timelineContainer");
+            let tableContainer = document.getElementById("tableContainer");
+            
+            // Current view state
+            let currentView = "employees"; // Can be "employees", "categories", or "table"
+            
+            // Toggle between table and timeline views
             if (toggleButton) {
                 toggleButton.addEventListener("click", function () {
-                    document.getElementById("tableContainer").classList.toggle("d-none");
-                    document.getElementById("timelineContainer").classList.toggle("d-none");
-                    this.textContent = this.textContent.includes("Tabel") ? "Tampilkan Linimasa" : "Tampilkan Tabel";
+                    tableContainer.classList.remove("d-none");
+                    timelineContainer.classList.add("d-none");
+                    
+                    // Update active button states
+                    toggleButton.classList.add("active");
+                    toggleButton.classList.add("btn-primary");
+                    toggleButton.classList.remove("btn-secondary");
+                    
+                    viewByEmployeesButton.classList.remove("active");
+                    viewByEmployeesButton.classList.remove("btn-primary");
+                    viewByEmployeesButton.classList.add("btn-secondary");
+                    
+                    viewByCategoriesButton.classList.remove("active");
+                    viewByCategoriesButton.classList.remove("btn-primary");
+                    viewByCategoriesButton.classList.add("btn-secondary");
+                    
+                    currentView = "table";
+                    
+                    this.textContent = "Tampilkan Linimasa";
+                });
+            }
+
+            // View by employees (default view)
+            if (viewByEmployeesButton) {
+                viewByEmployeesButton.addEventListener("click", function() {
+                    timelineContainer.classList.remove("d-none");
+                    tableContainer.classList.add("d-none");
+                    toggleButton.textContent = "Tampilkan Tabel";
+                    
+                    // Update active button states
+                    viewByEmployeesButton.classList.add("active");
+                    viewByEmployeesButton.classList.add("btn-primary");
+                    viewByEmployeesButton.classList.remove("btn-secondary");
+                    
+                    viewByCategoriesButton.classList.remove("active");
+                    viewByCategoriesButton.classList.remove("btn-primary");
+                    viewByCategoriesButton.classList.add("btn-secondary");
+                    
+                    toggleButton.classList.remove("active");
+                    toggleButton.classList.remove("btn-primary");
+                    toggleButton.classList.add("btn-secondary");
+                    
+                    // Switch to employees view
+                    currentView = "employees";
+                    switchToEmployeesView();
+                });
+            }
+            
+            // View by categories
+            if (viewByCategoriesButton) {
+                viewByCategoriesButton.addEventListener("click", function() {
+                    timelineContainer.classList.remove("d-none");
+                    tableContainer.classList.add("d-none");
+                    toggleButton.textContent = "Tampilkan Tabel";
+                    
+                    // Update active button states
+                    viewByCategoriesButton.classList.add("active");
+                    viewByCategoriesButton.classList.add("btn-primary");
+                    viewByCategoriesButton.classList.remove("btn-secondary");
+                    
+                    viewByEmployeesButton.classList.remove("active");
+                    viewByEmployeesButton.classList.remove("btn-primary");
+                    viewByEmployeesButton.classList.add("btn-secondary");
+                    
+                    toggleButton.classList.remove("active");
+                    toggleButton.classList.remove("btn-primary");
+                    toggleButton.classList.add("btn-secondary");
+                    
+                    // Switch to categories view
+                    currentView = "categories";
+                    switchToCategoriesView();
                 });
             }
 
             let container = document.getElementById("timeline");
             let zoomStep = 0.5;
+            let timeline;
 
             document.getElementById('zoomIn').addEventListener('click', function () {
                 let currentRange = timeline.getWindow();
@@ -197,6 +284,8 @@
                                 start: "{{ $item->mulai }}",
                                 end: "{{ $item->tenggat }}",
                                 group: {{ $item->pegawai->id }},
+                                pegawaiId: {{ $item->pegawai->id }},
+                                kategori: "{{ $item->proyek->kategori ?? 'Tidak Ada Kategori' }}",
                                 subgroup: {{ $loop->index + 1 }},
                                 status: "{{ $item->status_proyek }}",
                                 deskripsi: "{{ $item->deskripsi ?? 'Tidak ada deskripsi' }}",
@@ -215,184 +304,243 @@
                                 }}"
                     },
                 @endforeach
-        ]);
+            ]);
 
-        let groups = new vis.DataSet([
-            @foreach ($pegawai as $p)
+            // Create employee groups (default view)
+            let employeeGroups = new vis.DataSet([
+                @foreach ($pegawai as $p)
                     {
-                    id: {{ $p->id }},
-                    content: "{{ $p->nama }}"
-                },
-            @endforeach
-        ]);
-
-        let options = {
-            groupOrder: "content",
-            stack: false,
-            subgroupOrder: "subgroup",
-            showCurrentTime: true,
-            zoomable: true,
-            orientation: { axis: "top" },
-            margin: {
-                item: 10,
-                axis: 10
-            }
-        };
-
-        let timeline = new vis.Timeline(container, items, groups, options);
-
-        // Modal Info
-        timeline.on("select", function (props) {
-            if (props.items.length > 0) {
-                let itemId = props.items[0];
-                let item = items.get(itemId);
-
-                $("#infoNamaPegawai").text(item.pegawai);
-                $("#infoNamaProyek").text(item.proyek);
-                $("#infoMulai").text(item.start);
-                $("#infoTenggat").text(item.end);
-                $("#infoStatus").text(item.status);
-                $("#infoDeskripsi").text(item.deskripsi);
-
-                $("#modalInfoLinimasa").modal("show");
-            }
-        });
-
-        // Validasi Tanggal Mulai dan Tenggat
-        let mulaiInput = document.getElementById("mulai");
-        let tenggatInput = document.getElementById("tenggat");
-
-        function validateDateInput() {
-            let mulai = new Date(mulaiInput.value);
-            let tenggat = new Date(tenggatInput.value);
-
-            if (mulai > tenggat) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Kesalahan Input',
-                    text: 'Tanggal mulai tidak boleh lebih besar dari tenggat!',
+                        id: {{ $p->id }},
+                        content: "{{ $p->nama }}"
+                    },
+                @endforeach
+            ]);
+            
+            // Create category groups
+            let categoryGroups = new vis.DataSet();
+            
+            // Collect unique categories from projects and create groups
+            let uniqueCategories = new Set();
+            items.forEach(item => {
+                uniqueCategories.add(item.kategori);
+            });
+            
+            // Convert Set to Array and create groups
+            let categoryId = 1;
+            Array.from(uniqueCategories).forEach(category => {
+                categoryGroups.add({
+                    id: category,
+                    content: category
                 });
+            });
 
-                // Reset input yang bermasalah
-                mulaiInput.value = "";
-                return false;
+            let options = {
+                groupOrder: "content",
+                stack: false,
+                subgroupOrder: "subgroup",
+                showCurrentTime: true,
+                zoomable: true,
+                orientation: { axis: "top" },
+                margin: {
+                    item: 10,
+                    axis: 10
+                }
+            };
+            
+            // Initialize timeline with employee groups (default view)
+            timeline = new vis.Timeline(container, items, employeeGroups, options);
+            
+            // Function to switch to employees view
+            function switchToEmployeesView() {
+                if (timeline) {
+                    timeline.destroy();
+                }
+                
+                // Add employee ID as group
+                items.forEach(item => {
+                    item.group = item.pegawaiId;
+                });
+                
+                timeline = new vis.Timeline(container, items, employeeGroups, options);
+                
+                // Re-attach the select event listener
+                attachTimelineSelectEvent();
             }
-            return true;
-        }
+            
+            // Function to switch to categories view
+            function switchToCategoriesView() {
+                if (timeline) {
+                    timeline.destroy();
+                }
+                
+                // Add category as group
+                items.forEach(item => {
+                    item.group = item.kategori;
+                });
+                
+                timeline = new vis.Timeline(container, items, categoryGroups, options);
+                
+                // Re-attach the select event listener
+                attachTimelineSelectEvent();
+            }
+            
+            // Function to attach the select event to timeline
+            function attachTimelineSelectEvent() {
+                timeline.on("select", function (props) {
+                    if (props.items.length > 0) {
+                        let itemId = props.items[0];
+                        let item = items.get(itemId);
 
-        mulaiInput.addEventListener("change", validateDateInput);
-        tenggatInput.addEventListener("change", validateDateInput);
+                        $("#infoNamaPegawai").text(item.pegawai);
+                        $("#infoNamaProyek").text(item.proyek);
+                        $("#infoMulai").text(item.start);
+                        $("#infoTenggat").text(item.end);
+                        $("#infoStatus").text(item.status);
+                        $("#infoDeskripsi").text(item.deskripsi);
 
-        // Submit Edit Linimasa
-        let editForm = document.getElementById("editLinimasaForm");
-        if (editForm) {
-            editForm.addEventListener("submit", function (event) {
-                event.preventDefault();
-
-                if (!validateDateInput()) return;
-
-                let formData = new FormData(editForm);
-                let id = document.getElementById("edit_linimasa_id").value;
-
-                fetch("{{ url('linimasa') }}/" + id, {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                        $("#modalInfoLinimasa").modal("show");
                     }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            let modalElement = document.getElementById("linimasaEditModal");
-                            let modalInstance = bootstrap.Modal.getInstance(modalElement);
-                            if (modalInstance) {
-                                modalInstance.hide();
-                            }
+                });
+            }
+            
+            // Attach select event for initial timeline
+            attachTimelineSelectEvent();
 
-                            document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+            // Validasi Tanggal Mulai dan Tenggat
+            let mulaiInput = document.getElementById("mulai");
+            let tenggatInput = document.getElementById("tenggat");
 
-                            Swal.fire({
-                                icon: "success",
-                                title: "Berhasil!",
-                                text: "Data Linimasa berhasil diperbarui!",
-                                showConfirmButton: false,
-                                timer: 2000
-                            }).then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Gagal!",
-                                text: data.message || "Terjadi kesalahan saat memperbarui data.",
-                            });
+            function validateDateInput() {
+                let mulai = new Date(mulaiInput.value);
+                let tenggat = new Date(tenggatInput.value);
+
+                if (mulai > tenggat) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Kesalahan Input',
+                        text: 'Tanggal mulai tidak boleh lebih besar dari tenggat!',
+                    });
+
+                    // Reset input yang bermasalah
+                    mulaiInput.value = "";
+                    return false;
+                }
+                return true;
+            }
+
+            mulaiInput.addEventListener("change", validateDateInput);
+            tenggatInput.addEventListener("change", validateDateInput);
+
+            // Submit Edit Linimasa
+            let editForm = document.getElementById("editLinimasaForm");
+            if (editForm) {
+                editForm.addEventListener("submit", function (event) {
+                    event.preventDefault();
+
+                    if (!validateDateInput()) return;
+
+                    let formData = new FormData(editForm);
+                    let id = document.getElementById("edit_linimasa_id").value;
+
+                    fetch("{{ url('linimasa') }}/" + id, {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
                         }
                     })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            text: "Gagal memperbarui data. Coba lagi!",
-                        });
-                    });
-            });
-        }
-
-        // Pop Up Hapus
-        document.querySelectorAll(".btn-delete").forEach(button => {
-            button.addEventListener("click", function () {
-                let id = this.getAttribute("data-id");
-
-                Swal.fire({
-                    title: "Yakin ingin menghapus?",
-                    text: "Data linimasa yang dihapus tidak dapat dikembalikan!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Ya, Hapus!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(`{{ url('linimasa') }}/${id}`, {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                "X-HTTP-Method-Override": "DELETE"
-                            }
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        icon: "success",
-                                        title: "Berhasil!",
-                                        text: "Data Linimasa berhasil dihapus!",
-                                        showConfirmButton: false,
-                                        timer: 2000
-                                    }).then(() => {
-                                        location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: "error",
-                                        title: "Gagal!",
-                                        text: "Terjadi kesalahan saat menghapus data.",
-                                    });
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                let modalElement = document.getElementById("linimasaEditModal");
+                                let modalInstance = bootstrap.Modal.getInstance(modalElement);
+                                if (modalInstance) {
+                                    modalInstance.hide();
                                 }
-                            })
-                            .catch(error => {
+
+                                document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Berhasil!",
+                                    text: "Data Linimasa berhasil diperbarui!",
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
                                 Swal.fire({
                                     icon: "error",
-                                    title: "Oops...",
-                                    text: "Gagal menghapus data. Coba lagi!",
+                                    title: "Gagal!",
+                                    text: data.message || "Terjadi kesalahan saat memperbarui data.",
                                 });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Oops...",
+                                text: "Gagal memperbarui data. Coba lagi!",
                             });
-                    }
+                        });
+                });
+            }
+
+            // Pop Up Hapus
+            document.querySelectorAll(".btn-delete").forEach(button => {
+                button.addEventListener("click", function () {
+                    let id = this.getAttribute("data-id");
+
+                    Swal.fire({
+                        title: "Yakin ingin menghapus?",
+                        text: "Data linimasa yang dihapus tidak dapat dikembalikan!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Ya, Hapus!"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(`{{ url('linimasa') }}/${id}`, {
+                                method: "POST",
+                                headers: {
+                                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                                    "X-HTTP-Method-Override": "DELETE"
+                                }
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            icon: "success",
+                                            title: "Berhasil!",
+                                            text: "Data Linimasa berhasil dihapus!",
+                                            showConfirmButton: false,
+                                            timer: 2000
+                                        }).then(() => {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            icon: "error",
+                                            title: "Gagal!",
+                                            text: "Terjadi kesalahan saat menghapus data.",
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "Oops...",
+                                        text: "Gagal menghapus data. Coba lagi!",
+                                    });
+                                });
+                        }
+                    });
                 });
             });
         });
-    });
     </script>
 
 </body>
