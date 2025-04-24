@@ -143,7 +143,7 @@
     @include('magang.create')
     @include('magang.edit')
     @include('magang.info')
-    
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let toggleButton = document.getElementById("toggleView");
@@ -286,7 +286,6 @@
             mulaiInput.addEventListener("change", validateDateInput);
             tenggatInput.addEventListener("change", validateDateInput);
 
-            // Form Tambah Magang
             const tambahForm = document.getElementById("tambahMagangForm");
             if (tambahForm) {
                 tambahForm.addEventListener("submit", function (event) {
