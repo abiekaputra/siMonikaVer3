@@ -9,7 +9,7 @@ class MagangController extends Controller
 {
     public function index()
     {
-        // Mengambil semua data magang termasuk kolom 'universitas'
+        // Mengambil semua data magang termasuk kolom 'universitas' dan 'deskripsi'
         $magang = Magang::all();
 
         // Mengirim data magang ke view 'magang.index'
@@ -29,6 +29,7 @@ class MagangController extends Controller
             'jumlah_anak' => 'required|integer',
             'tanggal_masuk' => 'required|date',
             'tanggal_keluar' => 'required|date',
+            'deskripsi' => 'nullable|string', 
         ]);
 
         // Menyimpan data magang ke database
@@ -37,6 +38,7 @@ class MagangController extends Controller
             'jumlah_anak' => $request->jumlah_anak,
             'tanggal_masuk' => $request->tanggal_masuk,
             'tanggal_keluar' => $request->tanggal_keluar,
+            'deskripsi' => $request->deskripsi,
         ]);
 
         // Redirect ke halaman index dengan pesan sukses
@@ -60,6 +62,7 @@ class MagangController extends Controller
             'jumlah_anak' => 'required|integer',
             'tanggal_masuk' => 'required|date',
             'tanggal_keluar' => 'required|date',
+            'deskripsi' => 'nullable|string',
         ]);
 
         // Mencari data magang berdasarkan ID
@@ -71,6 +74,7 @@ class MagangController extends Controller
             'jumlah_anak' => $request->jumlah_anak,
             'tanggal_masuk' => $request->tanggal_masuk,
             'tanggal_keluar' => $request->tanggal_keluar,
+            'deskripsi' => $request->deskripsi,
         ]);
 
         // Redirect ke halaman index dengan pesan sukses
@@ -79,11 +83,9 @@ class MagangController extends Controller
 
     public function destroy($id)
     {
-        // Mencari dan menghapus data magang berdasarkan ID
         $magang = Magang::findOrFail($id);
         $magang->delete();
 
-        // Mengirim response sukses setelah menghapus data
-        return redirect()->route('magang.index')->with('success', 'Data magang berhasil dihapus.');
+        return response()->json(['success' => true, 'message' => 'Data magang berhasil dihapus.']);
     }
 }

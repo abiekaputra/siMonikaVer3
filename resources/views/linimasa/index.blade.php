@@ -111,12 +111,16 @@
                                         <td>{{ $item->mulai }}</td>
                                         <td>{{ $item->tenggat }}</td>
                                         <td>
-
-                                            <button class="btn btn-warning btn-sm btn-edit" data-id="{{ $item->id }}"
-                                                data-pegawai="{{ $item->pegawai->id }}" data-proyek="{{ $item->proyek->id }}"
-                                                data-status="{{ $item->status_proyek }}" data-mulai="{{ $item->mulai }}"
-                                                data-tenggat="{{ $item->tenggat }}" data-deskripsi="{{ $item->deskripsi ?? '' }}"
-                                                data-bs-toggle="modal" data-bs-target="#linimasaEditModal">
+                                            <button class="btn btn-warning btn-sm btn-edit"
+                                                data-id="{{ $item->id }}"
+                                                data-pegawai="{{ $item->pegawai->id }}"
+                                                data-proyek="{{ $item->proyek->id }}"
+                                                data-status="{{ $item->status_proyek }}"
+                                                data-mulai="{{ $item->mulai }}"
+                                                data-tenggat="{{ $item->tenggat }}"
+                                                data-deskripsi="{{ $item->deskripsi ?? '' }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#linimasaEditModal">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
 
@@ -129,20 +133,19 @@
                                                 @csrf
                                                 @method('DELETE')
                                             </form>
-                                        <td style="
-                                                                    background-color: {{
-                            match ($item->status_proyek) {
-                                'Selesai Lebih Cepat' => 'green; color: white;',
-                                'Tepat Waktu' => 'lightgreen; color: black;',
-                                'Terlambat' => 'red; color: white;',
-                                'Revisi' => 'orange; color: black;',
-                                'Proses' => 'blue; color: white;',
-                                'Todo Next' => 'gray; color: white;',
-                                default => 'lightgray; color: black;',
-                            }
-                                                                    }}">
-                                        </td>
-
+                                            <td style="
+                                                background-color: {{
+                                                    match ($item->status_proyek) {
+                                                    'Selesai Lebih Cepat' => 'green; color: white;',
+                                                    'Tepat Waktu' => 'lightgreen; color: black;',
+                                                    'Terlambat' => 'red; color: white;',
+                                                    'Revisi' => 'orange; color: black;',
+                                                    'Proses' => 'blue; color: white;',
+                                                    'Todo Next' => 'gray; color: white;',
+                                                    default => 'lightgray; color: black;',
+                                                    }
+                                                }}">
+                                            </td>
                                         </td>
 
                                     </tr>
@@ -327,7 +330,7 @@
                 let formData = new FormData(editForm);
                 let id = document.getElementById("edit_linimasa_id").value;
 
-                fetch("{{ url(path: 'linimasa') }}/" + id, {
+                fetch("{{ url('linimasa') }}/" + id, {
                     method: "POST",
                     body: formData,
                     headers: {

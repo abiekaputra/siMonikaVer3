@@ -18,23 +18,24 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="modal-footer d-flex justify-content-between">
-                <button class="btn btn-warning btn-sm btn-edit" 
-                    data-id="{{ $item->id }}" 
-                    data-universitas="{{ $item->universitas }}" 
-                    data-jumlah_anak="{{ $item->jumlah_anak }}" 
-                    data-tanggal_masuk="{{ $item->tanggal_masuk }}" 
-                    data-tanggal_keluar="{{ $item->tanggal_keluar }}" 
-                    data-deskripsi="{{ $item->deskripsi }}" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#magangEditModal">
+                <button class="btn btn-warning btn-sm btn-edit" data-id="{{ $item->id }}"
+                    data-universitas="{{ $item->universitas }}" data-jumlah_anak="{{ $item->jumlah_anak }}"
+                    data-tanggal_masuk="{{ $item->tanggal_masuk }}" data-tanggal_keluar="{{ $item->tanggal_keluar }}"
+                    data-deskripsi="{{ $item->deskripsi }}" data-bs-toggle="modal" data-bs-target="#magangEditModal">
                     <i class="bi bi-pencil-square"></i>
                 </button>
 
                 <button class="btn btn-danger btn-delete" data-id="{{ $item->id }}">
                     <i class="bi bi-trash"></i>
                 </button>
+
+                <form id="delete-form-{{ $item->id }}" action="{{ route('linimasa.destroy', $item->id) }}" method="POST"
+                    style="display: none;">
+                    @csrf
+                    @method('DELETE')
+                </form>
             </div>
         </div>
     </div>

@@ -9,15 +9,24 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Toastr & SweetAlert2 -->
+    <!-- Bootstrap Icons CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <!-- Toastr CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+
+    <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Vis.js Timeline CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.4.6/vis-timeline-graph2d.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+    <!-- Meta Tag untuk CSRF -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -26,10 +35,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.4.6/vis-timeline-graph2d.min.js"></script>
 
-    <!-- Vis.js -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.4.6/vis-timeline-graph2d.min.css"
-        rel="stylesheet">
-
+    <!-- Custom Inline Styles -->
     <style>
         .zoom-controls {
             position: absolute;
@@ -129,264 +135,209 @@
                     </tbody>
                 </table>
             </div>
+
+            @include('magang.create')
+            @include('magang.edit')
+            @include('magang.info')
+
         @endif
     </div>
 
-    @include('magang.create')
-    @include('magang.edit')
-    @include('magang.info')
-</body>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let toggleButton = document.getElementById("toggleView");
-        if (toggleButton) {
-            toggleButton.addEventListener("click", function () {
-                document.getElementById("tableContainer").classList.toggle("d-none");
-                document.getElementById("timelineContainer").classList.toggle("d-none");
-                this.textContent = this.textContent.includes("Tabel") ? "Tampilkan Linimasa" : "Tampilkan Tabel";
-            });
-        }
-
-        let container = document.getElementById("timeline");
-        let zoomStep = 0.5;
-
-        document.getElementById('zoomIn').addEventListener('click', function () {
-            let currentRange = timeline.getWindow();
-            let start = currentRange.start.valueOf();
-            let end = currentRange.end.valueOf();
-            let interval = end - start;
-            let newInterval = interval * (1 - zoomStep);
-            let newStart = start + (interval - newInterval) / 2;
-            let newEnd = end - (interval - newInterval) / 2;
-            timeline.setWindow(newStart, newEnd);
-        });
-
-        document.getElementById('zoomOut').addEventListener('click', function () {
-            let currentRange = timeline.getWindow();
-            let start = currentRange.start.valueOf();
-            let end = currentRange.end.valueOf();
-            let interval = end - start;
-            let newInterval = interval * (1 + zoomStep);
-            let newStart = start - (newInterval - interval) / 2;
-            let newEnd = end + (newInterval - interval) / 2;
-            timeline.setWindow(newStart, newEnd);
-        });
-
-        function getItems() {
-            return new vis.DataSet([
-                @foreach ($magang as $item)
-                                    {
-                        id: {{ $item->id }},
-                        content: "{{ $item->universitas }}",
-                        start: "{{ $item->tanggal_masuk }}",
-                        end: "{{ $item->tanggal_keluar }}",
-                        deskripsi: "{{ $item->deskripsi ?? 'Tidak ada deskripsi' }}",
-                        universitas: "{{ $item->universitas }}",
-                        jumlah_anak: "{{ $item->jumlah_anak }}",
-                        style: "background-color: green; color: white;"
-                    },
-                @endforeach
-        ]);
-        }
-
-        let options = {
-            stack: false,
-            showCurrentTime: true,
-            zoomable: true,
-            orientation: { axis: "top" },
-            margin: {
-                item: 10,
-                axis: 10
-            }
-        };
-
-        let items = getItems();
-        let timeline = new vis.Timeline(container, items, options);
-
-        // Info Modal
-        timeline.on("select", function (props) {
-            if (props.items.length > 0) {
-                let item = items.get(props.items[0]);
-
-                $("#infoUniversitas").text(item.universitas);
-                $("#infoJumlahAnak").text(item.jumlah_anak);
-                $("#infoMulai").text(item.start);
-                $("#infoTenggat").text(item.end);
-                $("#infoDeskripsi").text(item.deskripsi);
-
-                let btnEdit = document.querySelector("#modalInfoMagang .btn-edit");
-                btnEdit.setAttribute("data-id", item.id);
-                btnEdit.setAttribute("data-universitas", item.universitas);
-                btnEdit.setAttribute("data-jumlah_anak", item.jumlah_anak);
-                btnEdit.setAttribute("data-mulai", item.start);
-                btnEdit.setAttribute("data-tenggat", item.end);
-                btnEdit.setAttribute("data-deskripsi", item.deskripsi || "");
-
-                let btnDelete = document.querySelector("#modalInfoMagang .btn-delete");
-                btnDelete.setAttribute("data-id", item.id);
-
-                $("#modalInfoMagang").modal("show");
-            }
-        });
-
-        // Event listener untuk tombol Edit di modal Info
-        document.querySelectorAll(".btn-edit").forEach(button => {
-            button.addEventListener("click", function () {
-                let id = this.getAttribute("data-id");
-                let universitas = this.getAttribute("data-universitas");
-                let jumlahAnak = this.getAttribute("data-jumlah_anak");
-                let mulai = this.getAttribute("data-mulai");
-                let tenggat = this.getAttribute("data-tenggat");
-                let deskripsi = this.getAttribute("data-deskripsi");
-
-                // Mengisi form edit dengan data yang dipilih
-                document.getElementById("edit_magang_id").value = id;
-                document.getElementById("edit_universitas").value = universitas;
-                document.getElementById("edit_jumlah_anak").value = jumlahAnak;
-                document.getElementById("edit_mulai").value = mulai;
-                document.getElementById("edit_tenggat").value = tenggat;
-                document.getElementById("edit_deskripsi").value = deskripsi;
-
-                // Menampilkan modal edit
-                $("#magangEditModal").modal("show");
-            });
-        });
-
-        // Validasi Tanggal
-        let mulaiInput = document.getElementById("mulai");
-        let tenggatInput = document.getElementById("tenggat");
-
-        function validateDateInput() {
-            let mulai = new Date(mulaiInput.value);
-            let tenggat = new Date(tenggatInput.value);
-
-            if (mulai > tenggat) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Kesalahan Input',
-                    text: 'Tanggal mulai tidak boleh lebih besar dari tenggat!',
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let toggleButton = document.getElementById("toggleView");
+            if (toggleButton) {
+                toggleButton.addEventListener("click", function () {
+                    document.getElementById("tableContainer").classList.toggle("d-none");
+                    document.getElementById("timelineContainer").classList.toggle("d-none");
+                    this.textContent = this.textContent.includes("Tabel") ? "Tampilkan Linimasa" : "Tampilkan Tabel";
                 });
-
-                mulaiInput.value = "";
-                return false;
             }
-            return true;
-        }
 
-        mulaiInput.addEventListener("change", validateDateInput);
-        tenggatInput.addEventListener("change", validateDateInput);
+            let container = document.getElementById("timeline");
+            let zoomStep = 0.5;
 
-        // Submit Edit Linimasa
-        let editForm = document.getElementById("editMagangForm");
-        if (editForm) {
-            editForm.addEventListener("submit", function (event) {
-                event.preventDefault();
+            document.getElementById('zoomIn').addEventListener('click', function () {
+                let currentRange = timeline.getWindow();
+                let start = currentRange.start.valueOf();
+                let end = currentRange.end.valueOf();
+                let interval = end - start;
+                let newInterval = interval * (1 - zoomStep);
+                let newStart = start + (interval - newInterval) / 2;
+                let newEnd = end - (interval - newInterval) / 2;
+                timeline.setWindow(newStart, newEnd);
+            });
 
-                if (!validateDateInput()) return;
+            document.getElementById('zoomOut').addEventListener('click', function () {
+                let currentRange = timeline.getWindow();
+                let start = currentRange.start.valueOf();
+                let end = currentRange.end.valueOf();
+                let interval = end - start;
+                let newInterval = interval * (1 + zoomStep);
+                let newStart = start - (newInterval - interval) / 2;
+                let newEnd = end + (newInterval - interval) / 2;
+                timeline.setWindow(newStart, newEnd);
+            });
 
-                let formData = new FormData(editForm);
-                let id = document.getElementById("edit_magang_id").value;
+            function getItems() {
+                return new vis.DataSet([
+                    @foreach ($magang as $item)
+                            {
+                            id: {{ $item->id }},
+                            content: "{{ $item->universitas }}",
+                            start: "{{ $item->tanggal_masuk }}",
+                            end: "{{ $item->tanggal_keluar }}",
+                            deskripsi: "{{ $item->deskripsi ?? 'Tidak ada deskripsi' }}",
+                            universitas: "{{ $item->universitas }}",
+                            jumlah_anak: "{{ $item->jumlah_anak }}",
+                            style: "background-color: green; color: white;"
+                        },
+                    @endforeach
+                ]);
+            }
 
-                fetch("{{ url(path: 'magang') }}/" + id, {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+            let options = {
+                groupOrder: "content",
+                stack: true,
+                showCurrentTime: true,
+                zoomable: true,
+                orientation: { axis: "top" },
+                margin: {
+                    item: 10,
+                    axis: 10
+                }
+            };
+
+            let items = getItems();
+            let timeline = new vis.Timeline(container, items, options);
+
+            // Info Modal
+            timeline.on("select", function (props) {
+                if (props.items.length > 0) {
+                    let item = items.get(props.items[0]);
+
+                    $("#infoUniversitas").text(item.universitas);
+                    $("#infoJumlahAnak").text(item.jumlah_anak);
+                    $("#infoMulai").text(item.start);
+                    $("#infoTenggat").text(item.end);
+                    $("#infoDeskripsi").text(item.deskripsi);
+
+                    let btnEdit = document.querySelector("#modalInfoMagang .btn-edit");
+                    btnEdit.setAttribute("data-id", item.id);
+                    btnEdit.setAttribute("data-universitas", item.universitas);
+                    btnEdit.setAttribute("data-jumlah_anak", item.jumlah_anak);
+                    btnEdit.setAttribute("data-mulai", item.start);
+                    btnEdit.setAttribute("data-tenggat", item.end);
+                    btnEdit.setAttribute("data-deskripsi", item.deskripsi || "");
+
+                    let btnDelete = document.querySelector("#modalInfoMagang .btn-delete");
+                    btnDelete.setAttribute("data-id", item.id);
+
+                    $("#modalInfoMagang").modal("show");
+                }
+            });
+
+            // Event listener untuk tombol Edit di modal Info
+            document.querySelectorAll(".btn-edit").forEach(button => {
+                button.addEventListener("click", function () {
+                    let id = this.getAttribute("data-id");
+                    let universitas = this.getAttribute("data-universitas");
+                    let jumlahAnak = this.getAttribute("data-jumlah_anak");
+                    let mulai = this.getAttribute("data-mulai");
+                    let tenggat = this.getAttribute("data-tenggat");
+                    let deskripsi = this.getAttribute("data-deskripsi");
+
+                    // Mengisi form edit dengan data yang dipilih
+                    document.getElementById("edit_magang_id").value = id;
+                    document.getElementById("edit_universitas").value = universitas;
+                    document.getElementById("edit_jumlah_anak").value = jumlahAnak;
+                    document.getElementById("edit_mulai").value = mulai;
+                    document.getElementById("edit_tenggat").value = tenggat;
+                    document.getElementById("edit_deskripsi").value = deskripsi;
+
+                    // Menampilkan modal edit
+                    $("#magangEditModal").modal("show");
+                });
+            });
+
+            // Validasi Tanggal Mulai dan Tenggat
+            let mulaiInput = document.getElementById("edit_tanggal_masuk");
+            let tenggatInput = document.getElementById("edit_tanggal_keluar");
+
+            function validateDateInput() {
+                let mulai = new Date(mulaiInput.value);
+                let tenggat = new Date(tenggatInput.value);
+
+                if (mulai > tenggat) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Kesalahan Input',
+                        text: 'Tanggal mulai tidak boleh lebih besar dari tenggat!',
+                    });
+
+                    // Reset input yang bermasalah
+                    mulaiInput.value = "";
+                    return false;
+                }
+                return true;
+            }
+
+            mulaiInput.addEventListener("change", validateDateInput);
+            tenggatInput.addEventListener("change", validateDateInput);
+
+            // Form Tambah Magang
+            const tambahForm = document.getElementById("tambahMagangForm");
+            if (tambahForm) {
+                tambahForm.addEventListener("submit", function (event) {
+                    event.preventDefault();
+
+                    const mulaiInput = document.getElementById("tanggal_masuk");
+                    const tenggatInput = document.getElementById("tanggal_keluar");
+
+                    const mulai = new Date(mulaiInput.value);
+                    const tenggat = new Date(tenggatInput.value);
+
+                    if (mulai > tenggat) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Kesalahan Input',
+                            text: 'Tanggal mulai tidak boleh lebih besar dari tenggat!',
+                        });
+                        return;
                     }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            let modalElement = document.getElementById("magangEditModal");
-                            let modalInstance = bootstrap.Modal.getInstance(modalElement);
-                            if (modalInstance) {
-                                modalInstance.hide();
-                            }
 
-                            document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+                    const formData = new FormData(tambahForm);
 
-                            Swal.fire({
-                                icon: "success",
-                                title: "Berhasil!",
-                                text: "Data Magang berhasil diperbarui!",
-                                showConfirmButton: false,
-                                timer: 2000
-                            }).then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Gagal!",
-                                text: data.message || "Terjadi kesalahan saat memperbarui data.",
-                            });
+                    fetch("{{ route('magang.store') }}", {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
                         }
                     })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            text: "Gagal memperbarui data. Coba lagi!",
-                        });
-                    });
-            });
-        }
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                // Tutup modal
+                                $('#magangCreateModal').modal('hide');
 
-        // Pop Up Hapus
-        document.querySelectorAll(".btn-delete").forEach(button => {
-            button.addEventListener("click", function () {
-                let id = this.getAttribute("data-id");
-
-                Swal.fire({
-                    title: "Yakin ingin menghapus?",
-                    text: "Data magang yang dihapus tidak dapat dikembalikan!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Ya, Hapus!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(`{{ url('magang') }}/${id}`, {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                "X-HTTP-Method-Override": "DELETE"
+                                // Refresh halaman atau lakukan tindakan lain sesuai kebutuhan
+                                location.reload();
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Terjadi Kesalahan',
+                                    text: data.message,
+                                });
                             }
                         })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        icon: "success",
-                                        title: "Berhasil!",
-                                        text: "Data Magang berhasil dihapus!",
-                                        showConfirmButton: false,
-                                        timer: 2000
-                                    }).then(() => {
-                                        location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: "error",
-                                        title: "Gagal!",
-                                        text: "Terjadi kesalahan saat menghapus data.",
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Oops...",
-                                    text: "Gagal menghapus data. Coba lagi!",
-                                });
-                            });
-                    }
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
                 });
-            });
+            }
         });
-    });
-</script>
+    </script>
+</body>
 
 </html>
