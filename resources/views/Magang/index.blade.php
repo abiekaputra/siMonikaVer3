@@ -11,7 +11,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap Icons CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+        rel="stylesheet">
 
     <!-- Toastr CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
@@ -20,7 +21,8 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     <!-- Vis.js Timeline CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.4.6/vis-timeline-graph2d.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.4.6/vis-timeline-graph2d.min.css"
+        rel="stylesheet">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
@@ -135,14 +137,13 @@
                     </tbody>
                 </table>
             </div>
-
-            @include('magang.create')
-            @include('magang.edit')
-            @include('magang.info')
-
         @endif
     </div>
 
+    @include('magang.create')
+    @include('magang.edit')
+    @include('magang.info')
+    
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let toggleButton = document.getElementById("toggleView");
@@ -182,7 +183,7 @@
             function getItems() {
                 return new vis.DataSet([
                     @foreach ($magang as $item)
-                            {
+                                {
                             id: {{ $item->id }},
                             content: "{{ $item->universitas }}",
                             start: "{{ $item->tanggal_masuk }}",

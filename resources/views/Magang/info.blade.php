@@ -19,6 +19,8 @@
                 </div>
             </div>
 
+            <!-- Perbaikan pada foreach -->
+            @foreach ($magang as $item)
             <div class="modal-footer d-flex justify-content-between">
                 <button class="btn btn-warning btn-sm btn-edit" data-id="{{ $item->id }}"
                     data-universitas="{{ $item->universitas }}" data-jumlah_anak="{{ $item->jumlah_anak }}"
@@ -37,6 +39,7 @@
                     @method('DELETE')
                 </form>
             </div>
+            @endforeach
         </div>
     </div>
 </div>
