@@ -81,6 +81,12 @@
                     <span>Proyek</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('magang.*') ? 'active' : '' }}" href="{{ route('magang.index') }}">
+                    <i class="bi bi-person-bounding-box"></i>
+                    <span>Magang</span>
+                </a>
+            </li>
         </ul>
     </nav>
 

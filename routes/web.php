@@ -13,7 +13,7 @@ use App\Http\Controllers\LinimasaController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\ProyekController;
 use App\Http\Controllers\KategoriController;
-
+use App\Http\Controllers\MagangController;
 
 // Route untuk guest (belum login)
 Route::middleware(['guest', 'throttle:6,1'])->group(function () {
@@ -66,7 +66,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/edit', [LinimasaController::class, 'edit'])->name('linimasa.edit');
         Route::put('/{id}', [LinimasaController::class, 'update'])->name('linimasa.update');
         Route::delete('/{id}', [LinimasaController::class, 'destroy'])->name('linimasa.destroy');
-
     });
 
     // Prefix untuk Pegawai
@@ -97,6 +96,16 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{id}', [KategoriController::class, 'update'])->name('kategori.update');
         Route::delete('/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
         Route::delete('/kategori/{id}', [ProyekController::class, 'destroyKategori'])->name('kategori.destroy');
+    });
+
+    // Prefix untuk Magang
+    Route::prefix('magang')->group(function () {
+        Route::get('/', [MagangController::class, 'index'])->name('magang.index');
+        Route::get('/create', [MagangController::class, 'create'])->name('magang.create');
+        Route::post('/store', [MagangController::class, 'store'])->name('magang.store');
+        Route::get('/{id}/edit', [MagangController::class, 'edit'])->name('magang.edit');
+        Route::put('/{id}', [MagangController::class, 'update'])->name('magang.update');
+        Route::delete('/{id}', [MagangController::class, 'destroy'])->name('magang.destroy');
     });
 
     Route::get('/chart-data', [AplikasiController::class, 'getChartData']);

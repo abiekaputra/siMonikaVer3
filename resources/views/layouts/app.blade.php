@@ -48,8 +48,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('admin*') ? 'active' : '' }}"
-                            href="{{ route('admin.index') }}">
+                        <a class="nav-link {{ request()->is('admin*') ? 'active' : '' }}" href="{{ route('admin.index') }}">
                             <i class="bi bi-people"></i>
                             <span>Kelola Admin</span>
                         </a>
@@ -65,45 +64,59 @@
                 @endif
 
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+                        href="{{ route('dashboard') }}">
                         <i class="bi bi-house-door"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('aplikasi.*') ? 'active' : '' }}" href="{{ route('aplikasi.index') }}">
+                    <a class="nav-link {{ request()->routeIs('aplikasi.*') ? 'active' : '' }}"
+                        href="{{ route('aplikasi.index') }}">
                         <i class="bi bi-grid"></i>
                         <span>Aplikasi</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('atribut.*') ? 'active' : '' }}" href="{{ route('atribut.index') }}">
+                    <a class="nav-link {{ request()->routeIs('atribut.*') ? 'active' : '' }}"
+                        href="{{ route('atribut.index') }}">
                         <i class="bi bi-clipboard"></i>
                         <span>Atribut</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.index') }}">
+                    <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"
+                        href="{{ route('profile.index') }}">
                         <i class="bi bi-person-vcard"></i>
                         <span>Profile</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('linimasa.*') ? 'active' : '' }}" href="{{ route('linimasa.index') }}">
+                    <a class="nav-link {{ request()->routeIs('linimasa.*') ? 'active' : '' }}"
+                        href="{{ route('linimasa.index') }}">
                         <i class="bi bi-calendar-check"></i>
                         <span>Linimasa</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('pegawai.*') ? 'active' : '' }}" href="{{ route('pegawai.index') }}">
+                    <a class="nav-link {{ request()->routeIs('pegawai.*') ? 'active' : '' }}"
+                        href="{{ route('pegawai.index') }}">
                         <i class="bi bi-people"></i>
                         <span>Pegawai</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('proyek.*') ? 'active' : '' }}" href="{{ route('proyek.index') }}">
+                    <a class="nav-link {{ request()->routeIs('proyek.*') ? 'active' : '' }}"
+                        href="{{ route('proyek.index') }}">
                         <i class="bi bi-briefcase"></i>
                         <span>Proyek</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('magang.*') ? 'active' : '' }}"
+                        href="{{ route('magang.index') }}">
+                        <i class="bi bi-person-bounding-box"></i>
+                        <span>Magang</span>
                     </a>
                 </li>
             </ul>

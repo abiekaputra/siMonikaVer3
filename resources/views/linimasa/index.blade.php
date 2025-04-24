@@ -327,7 +327,7 @@
                 let formData = new FormData(editForm);
                 let id = document.getElementById("edit_linimasa_id").value;
 
-                fetch("{{ url('linimasa') }}/" + id, {
+                fetch("{{ url(path: 'linimasa') }}/" + id, {
                     method: "POST",
                     body: formData,
                     headers: {
